@@ -1,2 +1,2 @@
 # Arduino_Checkers
-Arduino based checkers with robotic hand and posibility of online game.
+Arduino based checkers with robotic hand and posibility of onlіne game.
