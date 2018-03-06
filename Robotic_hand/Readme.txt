@@ -1,1 +1,1 @@
-Arduino based robotic hand for playing checkers.
+ñreated by nazik.
