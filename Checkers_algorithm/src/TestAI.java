@@ -12,8 +12,10 @@ public class TestAI {
             System.out.println("ROW: " + row + " COL: " + col);
             char[][] board = copyBoard(game.boardState);
             printBoard(board);
+            System.out.println("ХІД: " +i);
             game.setAiMove(null);
         }
+        System.out.println("Red pieces "+ String.valueOf(game.getRedPieces())+" Black pieces: "+game.getBlackPieces());
     }
     static void printBoard(char board[][]) {
         for (int i = 0; i < board.length; i++) {

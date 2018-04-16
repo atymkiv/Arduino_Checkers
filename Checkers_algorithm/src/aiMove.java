@@ -13,10 +13,10 @@ public class aiMove {
      */
     public aiMove(char player){
         this.player = player;
-        if (player == 'R')
-            oppPlayer = 'B';
+        if (player == Board.RED)
+            oppPlayer = Board.BLACK;
         else
-            oppPlayer = 'R';
+            oppPlayer = Board.RED;
     }
 
     /**
@@ -123,7 +123,7 @@ public class aiMove {
      * @return the score of the given board
      */
     private int score(Board board) {
-        if (player =='R')
+        if (player ==board.RED)
             return board.getRedWeightedScore()-board.getBlackWeightedScore();
         else
             return board.getBlackWeightedScore()-board.getRedWeightedScore();

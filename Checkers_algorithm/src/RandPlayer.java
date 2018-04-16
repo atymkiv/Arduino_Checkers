@@ -14,6 +14,10 @@ public RandPlayer(){}
 
         Random rn = new Random();
         int range = allPossibleMoves.size();
+        if (range < 1) {
+            randMove = allPossibleMoves.get(1);
+            return randMove;
+        }
         this.randMove = allPossibleMoves.get(rn.nextInt(range));
         return randMove;
     }

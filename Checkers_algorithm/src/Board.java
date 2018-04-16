@@ -5,11 +5,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class Board  {
+
+    public static final char RED = 'R';
+    public static final char BLACK = 'B';
+    public static final char RED_QUEEN = 'Q';
+    public static final char BLACK_QUEEN = 'K';
+    public static final char EMPTY_FIELD_SYMBOL = ' ';
+
     private char[][] boardState = new char[8][8];
-    private char player = 'R';
+    private char player = RED;
     private ArrayList<Move>moves;
     private boolean jumped = false;
-    private int redCount = 12;//number of red pieces on the board
+    private int redCount = 12;
     private int blackCount = 12;
     private int blackQuins = 0;
     private int redQuins = 0;
@@ -21,17 +28,17 @@ public class Board  {
 
     public Board(char player){
         this.player = player;
-        if (this.player == 'B')
-            ai = new aiMove('R');
-        else if (this.player=='R')
-            ai=new aiMove('B');
+        if (this.player == BLACK)
+            ai = new aiMove(RED);
+        else if (this.player==RED)
+            ai=new aiMove(BLACK);
         this.boardState = placePieces();
     }
     /**
      * Creates a new board with an ai player;
      */
     public Board(){
-        this.ai = new aiMove('B');
+        this.ai = new aiMove(BLACK);
     }
 
     /**
@@ -100,41 +107,70 @@ public class Board  {
     public ArrayList<Move> getJumps(int row, int col) {
         ArrayList<Move> jumps = new ArrayList<>();
         char chosenPiece = getInfoAtPosition(row,col);
-
         //get red 'R' jumps
-        if (player == 'R'){
-            if (chosenPiece == 'R') {
-                if (chosenPiece == 'R' || chosenPiece == 'Q') {
-                    if(getInfoAtPosition(row+1,col+1)=='B'||
-                            getInfoAtPosition(row+1,col+1)=='K'){
-                        if (getInfoAtPosition(row+2,col+2)==' '){
+        if (player == RED){
+            if (chosenPiece == RED || chosenPiece == RED_QUEEN) {
+                    if(getInfoAtPosition(row+1,col+1)==BLACK||
+                            getInfoAtPosition(row+1,col+1)==BLACK_QUEEN){
+                        if (getInfoAtPosition(row+2,col+2)==EMPTY_FIELD_SYMBOL){
                             jumps.add(new Move(row,col,row+2,col+2));
                         }
-                        if (getInfoAtPosition(row+1,col-1)=='B'||
-                                getInfoAtPosition(row+1,col-1)=='K'){
-                            if (getInfoAtPosition(row+2,col-2)==' '){
+                        if (getInfoAtPosition(row+1,col-1)==BLACK||
+                                getInfoAtPosition(row+1,col-1)==BLACK_QUEEN){
+                            if (getInfoAtPosition(row+2,col-2)==EMPTY_FIELD_SYMBOL){
                                 jumps.add(new Move(row,col,row-2,col-2));
                             }
                         }
                     }
                 }
-                //if it is a quine - jumps along the diagonal
-                if (chosenPiece == 'Q'){
-                    if (getInfoAtPosition(row+1,col+1)=='R'||
-                            getInfoAtPosition(row+1,col+1)== 'K'){
-                        if (getInfoAtPosition(row+2,col+2)==' '){
+               //Get diagonal jumps for queen
+                if (chosenPiece == RED_QUEEN){
+                    if (getInfoAtPosition(row+1,col+1)==BLACK||
+                            getInfoAtPosition(row+1,col+1)== BLACK_QUEEN){
+                        if (getInfoAtPosition(row+2,col+2)==EMPTY_FIELD_SYMBOL){
                             jumps.add(new Move(row, col,row+2,col+2 ));
                         }
                     }
-                    if (getInfoAtPosition(row+1,col-1)=='R'||
-                            getInfoAtPosition(row+1,col-1)== 'K') {
-                        if (getInfoAtPosition(row + 2, col - 2) == ' ') {
+                    if (getInfoAtPosition(row+1,col-1)==BLACK||
+                            getInfoAtPosition(row+1,col-1)== BLACK_QUEEN) {
+                        if (getInfoAtPosition(row + 2, col - 2) == EMPTY_FIELD_SYMBOL) {
                             jumps.add(new Move(row, col, row + 2, col - 2));
                         }
                     }
                 }
+
+    } else if (player == BLACK) { // Get black jumps
+        if (chosenPiece == BLACK || chosenPiece == BLACK_QUEEN) {
+            if (getInfoAtPosition(row - 1, col + 1) == RED ||
+                    getInfoAtPosition(row - 1, col + 1) == RED_QUEEN) {
+                if (getInfoAtPosition(row - 2, col + 2) == EMPTY_FIELD_SYMBOL) {
+                    jumps.add(new Move(row, col, row - 2, col + 2));
+                }
+            }
+            if (getInfoAtPosition(row - 1, col - 1) == RED ||
+                    getInfoAtPosition(row - 1, col - 1) == RED_QUEEN) {
+                if (getInfoAtPosition(row - 2, col - 2) == EMPTY_FIELD_SYMBOL) {
+                    jumps.add(new Move(row, col, row - 2, col - 2));
+                }
             }
         }
+
+        // Get backwards jumps
+        if (chosenPiece == BLACK_QUEEN) {
+            if (getInfoAtPosition(row + 1, col + 1) == RED ||
+                    getInfoAtPosition(row + 1, col + 1) == RED_QUEEN) {
+                if (getInfoAtPosition(row + 2, col + 2) == EMPTY_FIELD_SYMBOL) {
+                    jumps.add(new Move(row, col, row + 2, col + 2));
+                }
+            }
+            if (getInfoAtPosition(row + 1, col - 1) == RED ||
+                    getInfoAtPosition(row + 1, col - 1) == RED_QUEEN) {
+                if (getInfoAtPosition(row + 2, col - 2) == EMPTY_FIELD_SYMBOL) {
+                    jumps.add(new Move(row, col, row + 2, col - 2));
+                }
+            }
+        }
+    }
         return jumps;
     }
 
@@ -156,6 +192,11 @@ public class Board  {
      * @return all legal moves for the side
      */
     public ArrayList<Move> getAllLegalMovesForSide(char side) {
+        char queen = '\u0000';
+        if (side==RED)
+            queen=RED_QUEEN;
+        else if(side==BLACK)
+            queen = BLACK_QUEEN;
         ArrayList<Move> moves= new ArrayList<>();
         int count = 0;
 
@@ -163,20 +204,19 @@ public class Board  {
         for (int row = 0;row<8;row++){
             for (int col=0; col<8; col++){
                 char currPosition = getInfoAtPosition(row,col);
-                if (currPosition==side){
+                if (currPosition==side||currPosition==queen){
                     moves.addAll(getLegalMovesForSideAtPosition(side,row,col));
                     count++;
                 }
 
-                //Get quin moves
-                if (side=='Q') {
+                //Get queen moves
+                if (side==RED&&currPosition==queen) {
                     moves.addAll(getLegalMovesForSideAtPosition(side, row, col));
                     count++;
-                } else if (side=='K'){
+                } else if (side==BLACK&&currPosition==queen){
                     moves.addAll(getLegalMovesForSideAtPosition(side,row,col));
                     count++;
                 }
-
                 //Stop if all pieces of the color have been found
                 if (count==12){
                     return moves;
@@ -198,31 +238,31 @@ public class Board  {
         ArrayList<Move>moves= new ArrayList<>();
 
         //Get red moves
-        if (side=='R'||side=='Q'){
-            if (chosenPiece=='R'||chosenPiece=='Q'){
-                if (getInfoAtPosition(row+1,col+1)==' ')
+        if (side==RED||side==RED_QUEEN){
+            if (chosenPiece==RED||chosenPiece==RED_QUEEN){
+                if (getInfoAtPosition(row+1,col+1)==EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row+1,col+1));
-                if (getInfoAtPosition(row+1,col-1)==' ')
+                if (getInfoAtPosition(row+1,col-1)==EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row+1,col-1));
             }
             if (chosenPiece=='Q'){ //ЗМІНИТИ ДЛЯ ХОДІВ ПО ДІАГОНАЛІ
-                if (getInfoAtPosition(row-1,col+1)==' ')
+                if (getInfoAtPosition(row-1,col+1)==EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row-1,col-1));
-                if (getInfoAtPosition(row-1, col-1)==' ')
+                if (getInfoAtPosition(row-1, col-1)==EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col, row-1, col-1));
             }
         }//get Black moves
-        else if (side=='B'||side=='K'){
-            if (chosenPiece=='B'||chosenPiece=='K'){
-                if (getInfoAtPosition(row-1,col+1)==' ')
+        else if (side==BLACK||side==BLACK_QUEEN){
+            if (chosenPiece==BLACK||chosenPiece==BLACK_QUEEN){
+                if (getInfoAtPosition(row-1,col+1)== EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row-1, col+1));
-                if (getInfoAtPosition(row-1, col-1)==' ')
+                if (getInfoAtPosition(row-1, col-1)== EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row-1,col-1));
             }
             if (chosenPiece=='K'){//ЗМІНИТИ ДЛЯ ХОДІВ ПО ДІАГОНАЛІ
-                if (getInfoAtPosition(row+1,col+1)==' ')
+                if (getInfoAtPosition(row+1,col+1)==EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row+1,col+1));
-                if (getInfoAtPosition(row+1,col-1)==' ')
+                if (getInfoAtPosition(row+1,col-1)== EMPTY_FIELD_SYMBOL)
                     moves.add(new Move(row,col,row+1,col-1));
             }
         }
@@ -236,23 +276,27 @@ public class Board  {
     /**
      * Moves a piece
      * @param move the move that will made
-     * @return whether of not a quine was made
+     * @return whether of not a queen was made
      */
     public boolean movePiece(Move move) {
         //change location of piece
-        char temp = boardState[move.currRow][move.currCol];
-        boardState[move.currRow][move.currCol]=' ';
+        char temp = getInfoAtPosition(move.currRow,move.currCol);
 
-        //handles quine
-        if (player == 'R'&&move.currRow == 7){
-            boardState[move.movRow][move.movCol]='Q';
+        boardState[move.currRow][move.currCol]= EMPTY_FIELD_SYMBOL;
+
+        //handles queen
+        if (player == RED && move.currRow == 7){
+            boardState[move.movRow][move.movCol]= RED_QUEEN;
             redQuins++;
             return true;
-        }else if (player=='B'&&move.movRow==0){
-            boardState[move.movRow][move.movCol]='K';
+        }else if (player == BLACK && move.movRow==0){
+            boardState[move.movRow][move.movCol]= BLACK_QUEEN;
             blackQuins++;
             return true;
         }else {
+            if(move.movRow>7||move.movRow<0||move.movCol>7||move.movCol<0){
+                return false;
+            }
             boardState[move.movRow][move.movCol]=temp;
             return false;
         }
@@ -268,16 +312,16 @@ public class Board  {
         //Verifies that jump was made
         if (spaceSkipped.getKey()!=move.currRow && spaceSkipped.getKey()!=move.movRow &&
                 spaceSkipped.getValue() != move.movCol && spaceSkipped.getValue() != move.currCol) {
-            if (boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == 'Q')
+            if (boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == RED_QUEEN)
                 redQuins--;
-            if (boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == 'K')
+            if (boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == BLACK_QUEEN)
                 blackQuins--;
-            boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] = ' ';
+            boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] = EMPTY_FIELD_SYMBOL;
             jumped = true;
-            if (player == 'R')
-                blackCount--;
+            if (player == RED)
+                this.blackCount--;
             else
-                redCount--;
+                this.redCount--;
         }else
             jumped=false;
         }
@@ -286,7 +330,7 @@ public class Board  {
      * @return the number of red pieces on the board
      */
     public int getNumRed() {
-    return redCount;
+    return this.redCount;
     }
 
     /**
@@ -294,7 +338,7 @@ public class Board  {
      * @return the number of black pieces on the board
      */
     public int getNumBlack() {
-    return blackCount;
+    return this.blackCount;
     }
 
     /**
@@ -323,13 +367,13 @@ public class Board  {
             for(int col = 0; col<8; col++){
                 if (row % 2 != col % 2) {
                     if (row<3)
-                        board[row][col]= 'R';
+                        board[row][col]= RED;
                     else if (row>4)
-                        board[row][col] = 'B';
+                        board[row][col] = BLACK;
                     else
-                        board[row][col] = ' ';
+                        board[row][col] = EMPTY_FIELD_SYMBOL;
                 }else
-                    board[row][col] = ' ';
+                    board[row][col] = EMPTY_FIELD_SYMBOL;
             }
         }
         return board;
@@ -376,12 +420,12 @@ public class Board  {
     public void updateBoard(Move move, boolean crowned) {
         // Checks for winner
         if (blackCount == 0) {
-            winner = 'R';
+            winner = RED;
 
             return;
         }
         if (redCount == 0) {
-            winner = 'B';
+            winner = BLACK;
             return;
         }
 
@@ -389,18 +433,18 @@ public class Board  {
         if (!crowned && jumped) {
             if (getJumps(move.movRow, move.movCol).isEmpty()) {
                 jumped = false;
-                if (player =='R')
-                    player = 'B';
+                if (player ==RED)
+                    player = BLACK;
                 else
-                    player = 'R';
+                    player = RED;
             }
         } else {
             // Changes player
             jumped = false;
-            if (player == 'R') {
-                player = 'B';
+            if (player == RED) {
+                player = BLACK;
             } else
-                player = 'R';
+                player = RED;
         }
     }
 
