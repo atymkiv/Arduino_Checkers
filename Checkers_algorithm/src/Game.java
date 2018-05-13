@@ -4,26 +4,36 @@ public class Game {
     private Move randMove;
     private Move aiMove;
     private RandPlayer randPlayer= new RandPlayer();
-    private Board board = new Board(Board.RED);
+    private Board board;
     private ArrayList<Move> allPossibleMoves;
-    public char[][]boardState;
+    private char[][]boardState;
     private char winner;
-    private int redPieces = board.getNumRed();
-    private int blackPieces = board.getNumBlack();
+
+    public Game(){}
+    public Game(char[][] board, char player){
+        this.board = new Board();
+        this.board.setPlayer(player);
+        this.board.setBoardState(board);
+    }
 
     /**
      * Sending the random move to minimax and getting the answer of the algo
-     * @return the move made by AI
+     * @return the board
      */
-    public Move rightMove() {
-        while (this.aiMove== null) {
+    public char[][] rightMove() {
+        if (board.getPlayer()==Board.RED) {
             this.allPossibleMoves = this.board.getAllLegalMovesForSide(Board.RED);
-            this.randMove = randPlayer.getRandMove(this.allPossibleMoves);
+            if (allPossibleMoves.size()>0)
+                this.randMove = randPlayer.getRandMove(this.allPossibleMoves);
+            else {winner = Board.BLACK; return null;}
             this.aiMove = board.makeMove(this.randMove);
-            this.boardState = board.getBoardState();
-            setWinner();
         }
-        return this.aiMove;
+        else {
+            this.aiMove = board.makeMove(this.randMove);
+        }
+            this.boardState = this.board.getBoardState();
+            setWinner();
+        return this.boardState;
     }
 
     public void setAiMove(Move aiMove) {
@@ -36,11 +46,21 @@ public class Game {
     public char getWinner(){
         return this.winner;
     }
-    public int getRedPieces(){
-        return this.redPieces;
+
+   /* public char[][] getBoardState() {
+        board = new Board(Board.RED);
+        setBoardState(board.getBoardState());
+        return boardState;
+    }*/
+
+    public void setBoardState(char[][] boardState) {
+        this.boardState = boardState;
+    }
+    public void restartGame(){
+        board = new Board(Board.RED);
     }
 
-    public int getBlackPieces() {
-        return blackPieces;
+    public Move getAiMove() {
+        return aiMove;
     }
 }

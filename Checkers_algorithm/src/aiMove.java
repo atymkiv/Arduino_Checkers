@@ -86,7 +86,7 @@ public class aiMove {
      * Picks the move based on minimax
      * @return the move that was selected
      */
-    //Можна зробити через рекурсію і додати alpha-beta pruning
+    //Можна зробити через рекурсію і додати alpha-beta pruning=
     private Move pickMove() {
         int max = -13;
         int index = 0;
@@ -114,6 +114,7 @@ public class aiMove {
         }
         return decisionTree.getChild(index).getMove();
     }
+
 
 
 

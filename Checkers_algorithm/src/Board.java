@@ -1,8 +1,6 @@
 import javafx.util.Pair;
-
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
+
 
 public class Board  {
 
@@ -24,7 +22,8 @@ public class Board  {
     private boolean initial = true;
     private aiMove ai;
     private boolean tie = false;
-
+    private boolean canJump = false;
+    private boolean canJumpChanged = false;
 
     public Board(char player){
         this.player = player;
@@ -206,6 +205,11 @@ public class Board  {
                 char currPosition = getInfoAtPosition(row,col);
                 if (currPosition==side||currPosition==queen){
                     moves.addAll(getLegalMovesForSideAtPosition(side,row,col));
+                    if (getCanJumpChanges()){
+                        moves.clear();
+                        moves.addAll(getLegalMovesForSideAtPosition(side,row,col));
+                        setCanJumpChanged(false);
+                    }
                     count++;
                 }
 
@@ -223,6 +227,7 @@ public class Board  {
                 }
             }
         }
+        setCanJump(false);
         return moves;
     }
 
@@ -234,42 +239,50 @@ public class Board  {
      * @return moves all legal moves at position row,col for checker
      */
     private ArrayList<Move> getLegalMovesForSideAtPosition(char side, int row, int col) {
-        char chosenPiece = getInfoAtPosition(row, col);
-        ArrayList<Move>moves= new ArrayList<>();
+        ArrayList<Move> jumps;
+        ArrayList<Move> moves = new ArrayList<>();
+        if (getCanJump()==false) {
+            char chosenPiece = getInfoAtPosition(row, col);
 
-        //Get red moves
-        if (side==RED||side==RED_QUEEN){
-            if (chosenPiece==RED||chosenPiece==RED_QUEEN){
-                if (getInfoAtPosition(row+1,col+1)==EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row+1,col+1));
-                if (getInfoAtPosition(row+1,col-1)==EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row+1,col-1));
+            //Get red moves
+            if (side == RED || side == RED_QUEEN) {
+                if (chosenPiece == RED || chosenPiece == RED_QUEEN) {
+                    if (getInfoAtPosition(row + 1, col + 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row + 1, col + 1));
+                    if (getInfoAtPosition(row + 1, col - 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row + 1, col - 1));
+                }
+                if (chosenPiece == 'Q') {
+                    if (getInfoAtPosition(row - 1, col + 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row - 1, col - 1));
+                    if (getInfoAtPosition(row - 1, col - 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row - 1, col - 1));
+                }
+            }//get Black moves
+            else if (side == BLACK || side == BLACK_QUEEN) {
+                if (chosenPiece == BLACK || chosenPiece == BLACK_QUEEN) {
+                    if (getInfoAtPosition(row - 1, col + 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row - 1, col + 1));
+                    if (getInfoAtPosition(row - 1, col - 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row - 1, col - 1));
+                }
+                if (chosenPiece == 'K') {
+                    if (getInfoAtPosition(row + 1, col + 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row + 1, col + 1));
+                    if (getInfoAtPosition(row + 1, col - 1) == EMPTY_FIELD_SYMBOL)
+                        moves.add(new Move(row, col, row + 1, col - 1));
+                }
             }
-            if (chosenPiece=='Q'){ //ЗМІНИТИ ДЛЯ ХОДІВ ПО ДІАГОНАЛІ
-                if (getInfoAtPosition(row-1,col+1)==EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row-1,col-1));
-                if (getInfoAtPosition(row-1, col-1)==EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col, row-1, col-1));
-            }
-        }//get Black moves
-        else if (side==BLACK||side==BLACK_QUEEN){
-            if (chosenPiece==BLACK||chosenPiece==BLACK_QUEEN){
-                if (getInfoAtPosition(row-1,col+1)== EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row-1, col+1));
-                if (getInfoAtPosition(row-1, col-1)== EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row-1,col-1));
-            }
-            if (chosenPiece=='K'){//ЗМІНИТИ ДЛЯ ХОДІВ ПО ДІАГОНАЛІ
-                if (getInfoAtPosition(row+1,col+1)==EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row+1,col+1));
-                if (getInfoAtPosition(row+1,col-1)== EMPTY_FIELD_SYMBOL)
-                    moves.add(new Move(row,col,row+1,col-1));
-            }
-        }
 
-        //Add jumps
-        ArrayList<Move> jumps = getJumps(row,col);
-        moves.addAll(jumps);
+            //Add jumps
+            jumps = getJumps(row, col);
+            if (jumps.size() > 0) {
+                setCanJump(true);
+                setCanJumpChanged(true);
+                return jumps;
+            }
+        } else if (getCanJump()==true)
+            moves.addAll(getJumps(row,col));
         return moves;
     }
 
@@ -310,11 +323,13 @@ public class Board  {
         Pair<Integer, Integer> spaceSkipped = move.getSpaceInBetween();
 
         //Verifies that jump was made
-        if (spaceSkipped.getKey()!=move.currRow && spaceSkipped.getKey()!=move.movRow &&
+        if (spaceSkipped.getKey()<8&&spaceSkipped.getKey()>0&&spaceSkipped.getValue()>0&&spaceSkipped.getValue()<8&&spaceSkipped.getKey()!=move.currRow && spaceSkipped.getKey()!=move.movRow &&
                 spaceSkipped.getValue() != move.movCol && spaceSkipped.getValue() != move.currCol) {
-            if (boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == RED_QUEEN)
+            if (spaceSkipped.getKey()<8&&spaceSkipped.getKey()>0&&spaceSkipped.getValue()>0&&spaceSkipped.getValue()<8&&
+                    boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == RED_QUEEN)
                 redQuins--;
-            if (boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == BLACK_QUEEN)
+            if (spaceSkipped.getKey()<8&&spaceSkipped.getKey()>0&&spaceSkipped.getValue()>0&&spaceSkipped.getValue()<8&&
+                    boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] == BLACK_QUEEN)
                 blackQuins--;
             boardState[spaceSkipped.getKey()][spaceSkipped.getValue()] = EMPTY_FIELD_SYMBOL;
             jumped = true;
@@ -361,7 +376,7 @@ public class Board  {
      * Places twelve pieces of each side in their
      * initial positions
      */
-    public char[][] placePieces(){
+    public static char[][] placePieces(){
         char[][]board = new char[8][8];
         for (int row= 0;row<8;row++){
             for(int col = 0; col<8; col++){
@@ -450,5 +465,27 @@ public class Board  {
 
     public char getWinner() {
         return winner;
+    }
+
+    public void setPlayer(char player) {
+        this.player = player;
+    }
+
+    public char getPlayer() {
+        return player;
+    }
+
+    public void setCanJump(boolean canJump) {
+        this.canJump = canJump;
+    }
+    public boolean getCanJump(){
+        return this.canJump;
+    }
+
+    public void setCanJumpChanged(boolean canJumpChanged) {
+        this.canJumpChanged = canJumpChanged;
+    }
+    public boolean getCanJumpChanges(){
+        return this.canJumpChanged;
     }
 }
