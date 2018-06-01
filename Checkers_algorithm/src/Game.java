@@ -20,7 +20,7 @@ public class Game {
      * Sending the random move to minimax and getting the answer of the algo
      * @return the board
      */
-    public char[][] rightMove() {
+    public char[][] minimaxBoard() {
         if (board.getPlayer()==Board.RED) {
             this.allPossibleMoves = this.board.getAllLegalMovesForSide(Board.RED);
             if (allPossibleMoves.size()>0)
@@ -34,6 +34,22 @@ public class Game {
             this.boardState = this.board.getBoardState();
             setWinner();
         return this.boardState;
+    }
+
+    public Move minimaxMove(){
+        if (board.getPlayer()==Board.RED) {
+            this.allPossibleMoves = this.board.getAllLegalMovesForSide(Board.RED);
+            if (allPossibleMoves.size()>0)
+                this.randMove = randPlayer.getRandMove(this.allPossibleMoves);
+            else {winner = Board.BLACK; return null;}
+            this.aiMove = board.makeMove(this.randMove);
+        }
+        else {
+            this.aiMove = board.makeMove(this.randMove);
+        }
+        this.boardState = this.board.getBoardState();
+        setWinner();
+        return this.aiMove;
     }
 
     public void setAiMove(Move aiMove) {
@@ -56,6 +72,11 @@ public class Game {
     public void setBoardState(char[][] boardState) {
         this.boardState = boardState;
     }
+
+    public char[][] getBoardState() {
+        return boardState;
+    }
+
     public void restartGame(){
         board = new Board(Board.RED);
     }

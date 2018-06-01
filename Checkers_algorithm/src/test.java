@@ -17,7 +17,7 @@ public class test {
         int count = 1;
        for (HashMap.Entry<String,char[][]> entry : newHash.entrySet())
         {
-            count++;
+
         }
 
         System.out.println(count);
